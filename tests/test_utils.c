@@ -168,8 +168,14 @@ static void test_trim_and_validators(void)
     name[32] = '\0';
     CHECK((is_valid_name(name) == 0));
 
-    CHECK((is_valid_phone("12345") == 1));          /* shortest, 5 */
-    CHECK((is_valid_phone("1234") == 0));           /* one too short */
+    /* Boundaries come from MIN_PHONE_LEN, not a hard-coded 5. */
+    for (i = 0; i < MIN_PHONE_LEN; i++) {
+        phone[i] = '1';
+    }
+    phone[MIN_PHONE_LEN] = '\0';
+    CHECK((is_valid_phone(phone) == 1));
+    phone[MIN_PHONE_LEN - 1] = '\0';
+    CHECK((is_valid_phone(phone) == 0));
     CHECK((is_valid_phone("13800000001") == 1));
     CHECK((is_valid_phone("123456789012345") == 1));  /* longest, 15 */
     CHECK((is_valid_phone("1234567890123456") == 0)); /* 16, too long */
@@ -177,8 +183,14 @@ static void test_trim_and_validators(void)
     CHECK((is_valid_phone("") == 0));
     CHECK((is_valid_phone(NULL) == 0));
 
-    CHECK((is_valid_password("abc123") == 1));            /* shortest, 6 */
-    CHECK((is_valid_password("abc12") == 0));             /* 5 */
+    /* Boundaries come from MIN_PASSWORD_LEN, not a hard-coded 6. */
+    for (i = 0; i < MIN_PASSWORD_LEN; i++) {
+        password[i] = 'a';
+    }
+    password[MIN_PASSWORD_LEN] = '\0';
+    CHECK((is_valid_password(password) == 1));
+    password[MIN_PASSWORD_LEN - 1] = '\0';
+    CHECK((is_valid_password(password) == 0));
     CHECK((is_valid_password("admin123") == 1));
     CHECK((is_valid_password("abcdefghijklmnop") == 1));  /* 16 */
     CHECK((is_valid_password("abcdefghijklmnopq") == 0)); /* 17 */

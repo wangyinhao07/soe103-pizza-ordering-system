@@ -61,6 +61,7 @@ static void manager_menu(ShopData *shop)
 {
     int choice;
     int rc;
+    int pwdRc;
 
     if (shop == NULL) {
         return;
@@ -95,7 +96,12 @@ static void manager_menu(ShopData *shop)
             stats_report_ui(shop);             /* Member E */
             break;
         case 4:
-            change_manager_password_ui(shop);  /* Member A */
+            pwdRc = change_manager_password_ui(shop);  /* Member A */
+            if (pwdRc == ST_CANCEL) {
+                printf("Password change cancelled.\n");
+            } else if (pwdRc != ST_OK && pwdRc != ST_EOF) {
+                printf("Password was not changed.\n");
+            }
             break;
         default:
             /* read_int already limits the range. This is a safety net. */
@@ -277,8 +283,7 @@ static int parse_customer_line(char *line, Customer *out)
     if (errno != 0 || end == fields[0] || *end != '\0') {
         return ST_ERR_INPUT;
     }
-    /* Design: account numbers are 6 digits, starting at 100001. */
-    if (accountNo < FIRST_ACCOUNT_NO || accountNo > 999999L) {
+    if (accountNo < FIRST_ACCOUNT_NO || accountNo > MAX_ACCOUNT_NO) {
         return ST_ERR_INPUT;
     }
 
@@ -498,7 +503,10 @@ int main(void)
 
     /* Member E: loads files, or leaves the defaults when a file is missing.
      * The menu and the manager account already have working defaults. */
-    load_all_data(shop);
+    if (load_all_data(shop) != ST_OK) {
+        printf("Warning: could not load every data file. "
+               "Continuing with defaults.\n");
+    }
     ensure_customers_loaded(shop);
 
     running = 1;
