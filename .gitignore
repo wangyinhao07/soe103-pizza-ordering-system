@@ -7,3 +7,6 @@ build/
 .vscode/
 .idea/
 .DS_Store
+tests/test_utils
+tests/test_auth
+tests/tmp_stdin.txt
