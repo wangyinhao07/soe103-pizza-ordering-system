@@ -1,0 +1,4 @@
+# accountNo|name|phone|password|balance_fen|active|createdAt
+100001|Alice Zhang|13800000001|alice123|20000|1|2026-11-20 10:00
+100002|Bob Li|13800000002|bob12345|500|1|2026-11-20 10:05
+100003|Carol Wang|13800000003|carol123|0|0|2026-11-20 10:10

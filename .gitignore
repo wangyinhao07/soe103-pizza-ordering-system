@@ -1,0 +1,9 @@
+*.o
+*.exe
+*.out
+pizza
+pizza_system
+build/
+.vscode/
+.idea/
+.DS_Store

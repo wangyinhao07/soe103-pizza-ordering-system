@@ -1,0 +1,12 @@
+# type|id|name|price_fen|available
+C|1|Hand Tossed|0|1
+C|2|Thin and Crispy|500|1
+C|3|Stuffed Crust|1200|1
+S|1|10 inch|3900|1
+S|2|12 inch|4900|1
+S|3|14 inch|5900|1
+S|4|16 inch|6900|1
+T|1|Margherita|0|1
+T|2|Hawaiian|800|1
+T|3|BBQ Chicken|1200|1
+T|4|Supreme|1500|1

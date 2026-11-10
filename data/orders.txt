@@ -1,0 +1,5 @@
+# O|orderId|accountNo|datetime|itemCount|total_fen
+# I|crust|size|topping|quantity|unitPrice_fen
+O|1|100001|2026-11-21 18:30|2|11600
+I|Hand Tossed|12 inch|Hawaiian|1|5700
+I|Thin and Crispy|10 inch|Supreme|1|5900
