@@ -59,31 +59,6 @@ int auth_check_customer(const ShopData *shop, int accountNo, const char *pwd)
 }
 
 /*
- * Function : auth_change_manager_password
- * Purpose  : Update mgr->password when oldPwd is correct and newPwd is legal.
- */
-int auth_change_manager_password(Manager *mgr, const char *oldPwd,
-                                 const char *newPwd)
-{
-    if (mgr == NULL || oldPwd == NULL || newPwd == NULL) {
-        return ST_ERR_INPUT;
-    }
-    if (strcmp(mgr->password, oldPwd) != 0) {
-        return ST_ERR_AUTH;
-    }
-    if (!is_valid_password(newPwd)) {
-        return ST_ERR_INPUT;
-    }
-    if (strcmp(oldPwd, newPwd) == 0) {
-        return ST_ERR_INPUT;
-    }
-
-    /* newPwd already passed the length check, so it fits in the array. */
-    snprintf(mgr->password, PASSWORD_LEN, "%s", newPwd);
-    return ST_OK;
-}
-
-/*
  * Function : manager_login_ui
  * Purpose  : Manager login screen. 0 cancels. Three wrong pairs go back.
  */
@@ -178,7 +153,8 @@ int customer_login_ui(const ShopData *shop)
 
     attemptsLeft = MAX_LOGIN_ATTEMPTS;
     while (attemptsLeft > 0) {
-        rc = read_int("Account number: ", 0, MAX_ACCOUNT_NO, &accountNo);
+        /* Account numbers in the design are 6 digits. 0 means cancel. */
+        rc = read_int("Account number: ", 0, 999999, &accountNo);
         if (rc == ST_EOF) {
             return ST_EOF;
         }
@@ -303,8 +279,7 @@ int change_manager_password_ui(ShopData *shop)
             continue;
         }
 
-        rc = auth_change_manager_password(&shop->manager, oldPwd, newPwd);
-        if (rc == ST_ERR_AUTH) {
+        if (strcmp(shop->manager.password, oldPwd) != 0) {
             attemptsLeft--;
             if (attemptsLeft > 0) {
                 printf("  ! Current password is incorrect. "
@@ -312,10 +287,12 @@ int change_manager_password_ui(ShopData *shop)
             }
             continue;
         }
-        if (rc != ST_OK) {
-            printf("  ! Password was not changed.\n");
-            continue;
-        }
+
+        /* is_valid_password already checked the length, so this fits.
+         * strncpy is the copy the design allows; the last byte is set
+         * to '\0' so the password is always a finished string. */
+        strncpy(shop->manager.password, newPwd, PASSWORD_LEN - 1);
+        shop->manager.password[PASSWORD_LEN - 1] = '\0';
 
         /* Member E implements the real write. The stub still returns. */
         if (save_manager(&shop->manager, MANAGER_FILE) != ST_OK) {

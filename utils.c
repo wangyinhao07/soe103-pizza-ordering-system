@@ -18,22 +18,13 @@
  *    prices do not pick up float rounding errors.
  */
 
-/* Ask for POSIX isatty/fileno before any system header is included. */
-#define _POSIX_C_SOURCE 200112L
-
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h>   /* strtol, required by the design for whole-line numbers */
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
 #include <time.h>
-
-#ifdef _WIN32
-#include <io.h>
-#else
-#include <unistd.h>
-#endif
 
 #include "utils.h"
 
@@ -391,49 +382,6 @@ int read_yes_no(const char *prompt)
 }
 
 /*
- * Function : read_string
- * Purpose  : Ask for text whose length is inside [minLen, maxLen].
- */
-int read_string(const char *prompt, char *buf, size_t size,
-                size_t minLen, size_t maxLen, int allowCancel)
-{
-    char line[LINE_LEN];
-    size_t len;
-    int rc;
-
-    /* LINE_LEN - 2 is the longest line read_line can return. */
-    if (buf == NULL || minLen > maxLen || maxLen >= size
-        || maxLen > (size_t)LINE_LEN - 2) {
-        return ST_ERR_INPUT;
-    }
-
-    for (;;) {
-        rc = read_line(prompt, line, sizeof line);
-        if (rc == ST_EOF) {
-            return ST_EOF;
-        }
-        if (rc == ST_ERR_INPUT) {
-            continue;
-        }
-        if (allowCancel && strcmp(line, "0") == 0) {
-            buf[0] = '\0';
-            return ST_CANCEL;
-        }
-
-        len = strlen(line);
-        if (len < minLen || len > maxLen) {
-            printf("  ! Please enter %lu to %lu characters.\n",
-                   (unsigned long)minLen, (unsigned long)maxLen);
-            continue;
-        }
-
-        /* snprintf always writes the ending '\0'. strcpy is not used. */
-        snprintf(buf, size, "%s", line);
-        return ST_OK;
-    }
-}
-
-/*
  * Function : format_money
  * Purpose  : Write fen as "12.50" (or "-1.50"). Safe with a short buffer.
  */
@@ -465,12 +413,15 @@ void format_money(Money amount, char *buf, size_t size)
 
 /*
  * Function : is_valid_name
- * Purpose  : 1..31 printable characters, no '|', no surrounding spaces.
+ * Purpose  : 1..31 printable characters, not blank, no '|'.
+ *            Names may contain a space ("Alice Zhang"). A line that is
+ *            only spaces counts as blank.
  */
 int is_valid_name(const char *s)
 {
     size_t len;
     size_t i;
+    int sawLetter;
 
     if (s == NULL) {
         return 0;
@@ -479,15 +430,17 @@ int is_valid_name(const char *s)
     if (len == 0 || len > (size_t)NAME_LEN - 1) {
         return 0;
     }
-    if (isspace((unsigned char)s[0]) || isspace((unsigned char)s[len - 1])) {
-        return 0;
-    }
+
+    sawLetter = 0;
     for (i = 0; i < len; i++) {
         if (!isprint((unsigned char)s[i]) || s[i] == FIELD_SEP) {
             return 0;
         }
+        if (!isspace((unsigned char)s[i])) {
+            sawLetter = 1;
+        }
     }
-    return 1;
+    return sawLetter;
 }
 
 /*
@@ -541,7 +494,8 @@ int is_valid_password(const char *s)
 
 /*
  * Function : is_valid_date
- * Purpose  : True calendar date, YYYY-MM-DD, years 2000..2099.
+ * Purpose  : True calendar date written as YYYY-MM-DD.
+ *            Years before 2000 are rejected (same rule as the skeleton).
  */
 int is_valid_date(const char *s)
 {
@@ -560,7 +514,7 @@ int is_valid_date(const char *s)
         || !read_digits(s + 8, 2, &day)) {
         return 0;
     }
-    if (year < 2000 || year > 2099) {
+    if (year < 2000) {
         return 0;
     }
     if (day < 1 || day > days_in_month(year, month)) {
@@ -599,28 +553,4 @@ void pause_for_enter(void)
     char buf[LINE_LEN];
 
     (void)read_line("\nPress Enter to continue...", buf, sizeof buf);
-}
-
-/*
- * Function : clear_screen
- * Purpose  : Clear a terminal. Skipped when stdout is not a terminal.
- */
-void clear_screen(void)
-{
-#ifdef _WIN32
-    if (_isatty(_fileno(stdout))) {
-        if (system("cls") != 0) {
-            /* cls can fail in some terminals. ANSI clear is the backup. */
-            printf("\033[2J\033[H");
-            fflush(stdout);
-        }
-    }
-#else
-    if (isatty(fileno(stdout))) {
-        if (system("clear") != 0) {
-            printf("\033[2J\033[H");
-            fflush(stdout);
-        }
-    }
-#endif
 }

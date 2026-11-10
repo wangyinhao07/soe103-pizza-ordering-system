@@ -71,24 +71,6 @@ int read_money(const char *prompt, Money min, Money max, Money *out);
 int read_yes_no(const char *prompt);
 
 /*
- * Function : read_string
- * Purpose  : Read a non-empty line whose length is in [minLen, maxLen].
- *            Keeps asking until the text fits. A line that is exactly "0"
- *            cancels when allowCancel is non-zero (design rule: 0 goes back).
- *            The text is read with a large temporary buffer, so buf only
- *            needs room for the final text plus '\0', not for the newline.
- * Params   : prompt      - question printed before each try
- *            buf         - destination (not NULL)
- *            size        - size of buf, must be at least maxLen + 1
- *            minLen      - shortest accepted length (0 allows an empty line)
- *            maxLen      - longest accepted length
- *            allowCancel - non-zero: the line "0" returns ST_CANCEL
- * Returns  : ST_OK, ST_CANCEL, ST_EOF, or ST_ERR_INPUT for a bad call
- */
-int read_string(const char *prompt, char *buf, size_t size,
-                size_t minLen, size_t maxLen, int allowCancel);
-
-/*
  * Function : parse_money
  * Purpose  : Convert a money string to fen without reading the keyboard.
  *            Used by read_money and by unit tests.
@@ -112,8 +94,7 @@ void format_money(Money amount, char *buf, size_t size);
 /*
  * Function : is_valid_name
  * Purpose  : Check a customer name or a menu option name.
- *            Valid: 1 to 31 visible characters, no '|' (the file separator),
- *            and no leading or trailing space. Call trim() first.
+ *            The design rule is 1 to 31 characters, not blank, and no '|'.
  * Returns  : 1 if valid, 0 otherwise (also 0 when s is NULL)
  */
 int is_valid_name(const char *s);
@@ -136,7 +117,8 @@ int is_valid_password(const char *s);
 /*
  * Function : is_valid_date
  * Purpose  : Check a calendar date written as YYYY-MM-DD.
- *            Years 2000 to 2099. 29 February is accepted only in a leap year.
+ *            29 February is accepted only in a leap year.
+ *            Years before 2000 are rejected, as in the shared skeleton.
  * Returns  : 1 if valid, 0 otherwise
  */
 int is_valid_date(const char *s);
@@ -162,14 +144,5 @@ void get_current_datetime(char *buf, size_t size);
  *            A very long line is discarded. End of input just returns.
  */
 void pause_for_enter(void);
-
-/*
- * Function : clear_screen
- * Purpose  : Clear a real terminal window. Does nothing when output is
- *            redirected to a file or a pipe, so test logs stay readable.
- *            Windows uses the cls command; other systems use clear,
- *            then an ANSI clear if that command is missing.
- */
-void clear_screen(void);
 
 #endif /* UTILS_H */

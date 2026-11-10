@@ -40,19 +40,6 @@ int auth_check_manager(const Manager *mgr, const char *user, const char *pwd);
 int auth_check_customer(const ShopData *shop, int accountNo, const char *pwd);
 
 /*
- * Function : auth_change_manager_password
- * Purpose  : Replace the manager password after the old one has been checked.
- *            Does not print and does not write the file. The UI does that.
- * Params   : mgr    - manager record to update
- *            oldPwd - password typed as the current one
- *            newPwd - replacement; must pass is_valid_password and must
- *                     be different from oldPwd
- * Returns  : ST_OK, ST_ERR_AUTH (old password wrong), or ST_ERR_INPUT
- */
-int auth_change_manager_password(Manager *mgr, const char *oldPwd,
-                                 const char *newPwd);
-
-/*
  * Function : manager_login_ui
  * Purpose  : Ask for the manager username and password, up to 3 attempts.
  * Params   : shop - shop data; the manager record is shop->manager

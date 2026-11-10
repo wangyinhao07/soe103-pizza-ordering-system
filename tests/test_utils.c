@@ -152,9 +152,9 @@ static void test_trim_and_validators(void)
     CHECK((is_valid_name("Alice Zhang") == 1));
     CHECK((is_valid_name("A") == 1));
     CHECK((is_valid_name("") == 0));
-    CHECK((is_valid_name("   ") == 0));
-    CHECK((is_valid_name(" Alice") == 0));
-    CHECK((is_valid_name("Alice ") == 0));
+    CHECK((is_valid_name("   ") == 0));          /* blank, not a name */
+    CHECK((is_valid_name(" Alice") == 1));       /* a space is allowed */
+    CHECK((is_valid_name("Alice ") == 1));
     CHECK((is_valid_name("A|B") == 0));
     CHECK((is_valid_name(NULL) == 0));
 
@@ -215,7 +215,8 @@ static void test_trim_and_validators(void)
     CHECK((is_valid_date("2026-13-01") == 0));
     CHECK((is_valid_date("2026-01-00") == 0));
     CHECK((is_valid_date("1999-01-01") == 0));
-    CHECK((is_valid_date("2100-01-01") == 0));
+    CHECK((is_valid_date("2100-01-01") == 1));
+    CHECK((is_valid_date("2100-02-29") == 0));   /* 2100 is not a leap year */
     CHECK((is_valid_date("2026/11/10") == 0));
     CHECK((is_valid_date("20261110") == 0));
     CHECK((is_valid_date("") == 0));
@@ -327,14 +328,12 @@ static void test_read_line_and_int(void)
     CHECK((read_int("n: ", 0, 10, &value) == ST_EOF));
 }
 
-static void test_read_money_yes_string(void)
+static void test_read_money_and_yes(void)
 {
     Money amount;
-    char name[NAME_LEN];
-    char password[PASSWORD_LEN];
     int answer;
 
-    printf("\n-- read_money / read_yes_no / read_string --\n");
+    printf("\n-- read_money / read_yes_no --\n");
 
     CHECK((read_money("Amount: ", 10, 1, &amount) == ST_ERR_INPUT));
 
@@ -388,37 +387,6 @@ static void test_read_money_yes_string(void)
     answer = read_yes_no("ok? ");
     CHECK((answer == 0)); /* EOF counts as no, and must return */
 
-    feed_stdin("\n   \nab\n");
-    CHECK((read_string("Name: ", name, sizeof name, 1, 31, 1) == ST_OK));
-    CHECK((strcmp(name, "ab") == 0));
-
-    feed_stdin("0\n");
-    CHECK((read_string("Name: ", name, sizeof name, 1, 31, 1) == ST_CANCEL));
-
-    feed_stdin("toolong\nBob\n");
-    CHECK((read_string("Name: ", name, sizeof name, 1, 3, 0) == ST_OK));
-    CHECK((strcmp(name, "Bob") == 0));
-
-    /* Password buffer is 17 bytes. A 16-character password must still fit,
-     * because the newline is handled in a temporary line, not in password[]. */
-    feed_stdin("abcdefghijklmnop\n");
-    CHECK((read_string("Password: ", password, sizeof password, 6, 16, 1)
-           == ST_OK));
-    CHECK((strlen(password) == 16));
-
-    feed_stdin("abcdefghijklmnopq\nabc123\n");
-    CHECK((read_string("Password: ", password, sizeof password, 6, 16, 1)
-           == ST_OK));
-    CHECK((strcmp(password, "abc123") == 0));
-
-    feed_stdin("abc\nabc123\n");
-    CHECK((read_string("Password: ", password, sizeof password, 6, 16, 1)
-           == ST_OK));
-    CHECK((strcmp(password, "abc123") == 0));
-
-    feed_stdin("");
-    CHECK((read_string("Name: ", name, sizeof name, 1, 31, 1) == ST_EOF));
-
     /* pause must return on Enter and also on end of input. */
     feed_stdin("\n");
     pause_for_enter();
@@ -434,7 +402,7 @@ int main(void)
     test_trim_and_validators();
     test_datetime();
     test_read_line_and_int();
-    test_read_money_yes_string();
+    test_read_money_and_yes();
 
     if (remove(TMP_INPUT) != 0) {
         /* The file may already be gone. That is not a test failure. */

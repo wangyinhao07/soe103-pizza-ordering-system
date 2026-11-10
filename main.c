@@ -277,7 +277,8 @@ static int parse_customer_line(char *line, Customer *out)
     if (errno != 0 || end == fields[0] || *end != '\0') {
         return ST_ERR_INPUT;
     }
-    if (accountNo < FIRST_ACCOUNT_NO || accountNo > MAX_ACCOUNT_NO) {
+    /* Design: account numbers are 6 digits, starting at 100001. */
+    if (accountNo < FIRST_ACCOUNT_NO || accountNo > 999999L) {
         return ST_ERR_INPUT;
     }
 
@@ -485,7 +486,6 @@ int main(void)
     int custIndex;
     int running;
 
-    clear_screen();
     printf("===== Pizza Ordering System =====\n");
     printf("Loading data...\n");
 

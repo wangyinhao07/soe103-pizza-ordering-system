@@ -5,8 +5,7 @@
  * Description : Constants, return codes and core data structures of the
  *               Pizza Ordering System. All money is stored as an integer
  *               number of fen (1 yuan = 100 fen) to avoid float rounding.
- * Version     : 0.2 (2026-11-10)
- *               Member A: added MAX_ACCOUNT_NO. Structs are unchanged.
+ * Version     : 0.1 (design draft, 2026-11-10)
  */
 #ifndef COMMON_H
 #define COMMON_H
@@ -35,7 +34,6 @@
 #define MIN_PRICE           0L          /* surcharge may be 0         */
 #define MAX_PRICE           100000L     /* 1000.00 yuan per component */
 #define FIRST_ACCOUNT_NO    100001      /* 6-digit account numbers    */
-#define MAX_ACCOUNT_NO      999999      /* largest 6-digit account    */
 #define FIRST_ORDER_ID      1
 #define MAX_LOGIN_ATTEMPTS  3
 

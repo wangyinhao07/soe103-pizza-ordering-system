@@ -142,56 +142,6 @@ static void test_customer_check(void)
     free(shop);
 }
 
-static void test_change_password_logic(void)
-{
-    ShopData *shop;
-    char longPwd[18];
-    int i;
-
-    printf("\n-- auth_change_manager_password --\n");
-    shop = make_shop();
-
-    CHECK((auth_change_manager_password(&shop->manager, "nope1234", "newpass99")
-           == ST_ERR_AUTH));
-    CHECK((auth_check_manager(&shop->manager, "admin", "admin123") == 1));
-
-    CHECK((auth_change_manager_password(&shop->manager, "admin123", "abc")
-           == ST_ERR_INPUT));
-    CHECK((auth_change_manager_password(&shop->manager, "admin123", "abc 123")
-           == ST_ERR_INPUT));
-    CHECK((auth_change_manager_password(&shop->manager, "admin123", "abc|1234")
-           == ST_ERR_INPUT));
-    CHECK((auth_change_manager_password(&shop->manager, "admin123", "admin123")
-           == ST_ERR_INPUT));
-    CHECK((auth_change_manager_password(NULL, "admin123", "newpass99")
-           == ST_ERR_INPUT));
-    CHECK((auth_change_manager_password(&shop->manager, NULL, "newpass99")
-           == ST_ERR_INPUT));
-    CHECK((auth_change_manager_password(&shop->manager, "admin123", NULL)
-           == ST_ERR_INPUT));
-
-    for (i = 0; i < 17; i++) {
-        longPwd[i] = 'a';
-    }
-    longPwd[17] = '\0';
-    CHECK((auth_change_manager_password(&shop->manager, "admin123", longPwd)
-           == ST_ERR_INPUT));
-    CHECK((strcmp(shop->manager.password, "admin123") == 0));
-
-    /* Boundaries that must be accepted: 6 characters and 16 characters. */
-    CHECK((auth_change_manager_password(&shop->manager, "admin123", "abc123")
-           == ST_OK));
-    CHECK((auth_check_manager(&shop->manager, "admin", "abc123") == 1));
-    CHECK((auth_check_manager(&shop->manager, "admin", "admin123") == 0));
-
-    longPwd[16] = '\0'; /* 16 a's */
-    CHECK((auth_change_manager_password(&shop->manager, "abc123", longPwd)
-           == ST_OK));
-    CHECK((auth_check_manager(&shop->manager, "admin", longPwd) == 1));
-
-    free(shop);
-}
-
 static void test_manager_login_ui(void)
 {
     ShopData *shop;
@@ -327,7 +277,6 @@ int main(void)
     printf("=== test_auth ===\n");
     test_manager_check();
     test_customer_check();
-    test_change_password_logic();
     test_manager_login_ui();
     test_customer_login_ui();
     test_change_password_ui();
