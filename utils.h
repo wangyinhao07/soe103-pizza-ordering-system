@@ -101,15 +101,16 @@ int is_valid_name(const char *s);
 
 /*
  * Function : is_valid_phone
- * Purpose  : Check a telephone number: 5 to 15 digits, nothing else.
+ * Purpose  : Check a telephone number: MIN_PHONE_LEN to PHONE_LEN-1
+ *            digits, nothing else.
  * Returns  : 1 if valid, 0 otherwise
  */
 int is_valid_phone(const char *s);
 
 /*
  * Function : is_valid_password
- * Purpose  : Check a password: 6 to 16 visible characters, no spaces
- *            and no '|'.
+ * Purpose  : Check a password: MIN_PASSWORD_LEN to PASSWORD_LEN-1
+ *            visible characters, no spaces and no '|'.
  * Returns  : 1 if valid, 0 otherwise
  */
 int is_valid_password(const char *s);

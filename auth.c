@@ -153,8 +153,8 @@ int customer_login_ui(const ShopData *shop)
 
     attemptsLeft = MAX_LOGIN_ATTEMPTS;
     while (attemptsLeft > 0) {
-        /* Account numbers in the design are 6 digits. 0 means cancel. */
-        rc = read_int("Account number: ", 0, 999999, &accountNo);
+        /* 0 means cancel. Real accounts are FIRST_ACCOUNT_NO..MAX_ACCOUNT_NO. */
+        rc = read_int("Account number: ", 0, MAX_ACCOUNT_NO, &accountNo);
         if (rc == ST_EOF) {
             return ST_EOF;
         }
@@ -205,9 +205,10 @@ int customer_login_ui(const ShopData *shop)
 
 /*
  * Function : change_manager_password_ui
- * Purpose  : Ask for the current password and a new password twice.
- *            A format error does not use up an attempt. A wrong current
- *            password does. Three of those and we stop.
+ * Purpose  : Ask for the current password first. A wrong current password
+ *            uses one attempt. Only after it matches do we ask for the
+ *            new password and check its format. A format error does not
+ *            use an attempt. Three wrong current passwords and we stop.
  */
 int change_manager_password_ui(ShopData *shop)
 {
@@ -223,8 +224,8 @@ int change_manager_password_ui(ShopData *shop)
 
     printf("\n----- Change Manager Password -----\n");
     printf("Enter 0 at any prompt to cancel.\n");
-    printf("A password is 6 to 16 characters, with no spaces and no '%c'.\n",
-           FIELD_SEP);
+    printf("A password is %d to %d characters, with no spaces and no '%c'.\n",
+           MIN_PASSWORD_LEN, PASSWORD_LEN - 1, FIELD_SEP);
 
     attemptsLeft = MAX_LOGIN_ATTEMPTS;
     while (attemptsLeft > 0) {
@@ -238,6 +239,20 @@ int change_manager_password_ui(ShopData *shop)
         if (strcmp(oldPwd, "0") == 0) {
             printf("Password change cancelled.\n");
             return ST_CANCEL;
+        }
+        if (oldPwd[0] == '\0') {
+            printf("  ! Password cannot be empty.\n");
+            continue;
+        }
+
+        /* Count this attempt before looking at the new password. */
+        if (strcmp(shop->manager.password, oldPwd) != 0) {
+            attemptsLeft--;
+            if (attemptsLeft > 0) {
+                printf("  ! Current password is incorrect. "
+                       "(%d attempt(s) left)\n", attemptsLeft);
+            }
+            continue;
         }
 
         rc = read_line("New password: ", newPwd, sizeof newPwd);
@@ -264,14 +279,16 @@ int change_manager_password_ui(ShopData *shop)
             return ST_CANCEL;
         }
 
-        /* These three problems are typing mistakes, not failed logins. */
+        /* These are typing mistakes. The current password was correct,
+         * so they do not use up one of the 3 attempts. */
         if (strcmp(newPwd, confirmPwd) != 0) {
             printf("  ! The two new passwords do not match.\n");
             continue;
         }
         if (!is_valid_password(newPwd)) {
-            printf("  ! New password must be 6-16 characters,\n"
-                   "    with no spaces and no '%c'.\n", FIELD_SEP);
+            printf("  ! New password must be %d-%d characters,\n"
+                   "    with no spaces and no '%c'.\n",
+                   MIN_PASSWORD_LEN, PASSWORD_LEN - 1, FIELD_SEP);
             continue;
         }
         if (strcmp(newPwd, oldPwd) == 0) {
@@ -279,20 +296,10 @@ int change_manager_password_ui(ShopData *shop)
             continue;
         }
 
-        if (strcmp(shop->manager.password, oldPwd) != 0) {
-            attemptsLeft--;
-            if (attemptsLeft > 0) {
-                printf("  ! Current password is incorrect. "
-                       "(%d attempt(s) left)\n", attemptsLeft);
-            }
-            continue;
-        }
-
-        /* is_valid_password already checked the length, so this fits.
-         * strncpy is the copy the design allows; the last byte is set
-         * to '\0' so the password is always a finished string. */
-        strncpy(shop->manager.password, newPwd, PASSWORD_LEN - 1);
-        shop->manager.password[PASSWORD_LEN - 1] = '\0';
+        /* %.*s writes at most PASSWORD_LEN-1 characters, so it fits and
+         * does not warn about truncation the way strncpy does at -O2. */
+        snprintf(shop->manager.password, PASSWORD_LEN, "%.*s",
+                 PASSWORD_LEN - 1, newPwd);
 
         /* Member E implements the real write. The stub still returns. */
         if (save_manager(&shop->manager, MANAGER_FILE) != ST_OK) {

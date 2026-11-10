@@ -259,9 +259,12 @@ static void test_change_password_ui(void)
     free(shop);
     shop = make_shop();
 
-    feed_stdin("wrong111\nnewpass99\nnewpass99\n"
-               "wrong111\nnewpass99\nnewpass99\n"
-               "wrong111\nnewpass99\nnewpass99\n");
+    /* The current password is checked before the new password's format.
+     * Three wrong current passwords stop, even when later lines are too
+     * short to be a legal new password. */
+    feed_stdin("wrong111\nabc\nabc\n"
+               "wrong222\nabc\nabc\n"
+               "wrong333\nabc\nabc\n");
     CHECK((change_manager_password_ui(shop) == ST_ERR_AUTH));
     CHECK((auth_check_manager(&shop->manager, "admin", "admin123") == 1));
 

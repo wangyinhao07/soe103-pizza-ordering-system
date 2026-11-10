@@ -445,7 +445,7 @@ int is_valid_name(const char *s)
 
 /*
  * Function : is_valid_phone
- * Purpose  : 5..15 digits and nothing else.
+ * Purpose  : MIN_PHONE_LEN..PHONE_LEN-1 digits and nothing else.
  */
 int is_valid_phone(const char *s)
 {
@@ -456,7 +456,7 @@ int is_valid_phone(const char *s)
         return 0;
     }
     len = strlen(s);
-    if (len < 5 || len > (size_t)PHONE_LEN - 1) {
+    if (len < MIN_PHONE_LEN || len > (size_t)PHONE_LEN - 1) {
         return 0;
     }
     for (i = 0; i < len; i++) {
@@ -469,7 +469,8 @@ int is_valid_phone(const char *s)
 
 /*
  * Function : is_valid_password
- * Purpose  : 6..16 visible characters, no space and no '|'.
+ * Purpose  : MIN_PASSWORD_LEN..PASSWORD_LEN-1 visible characters,
+ *            no space and no '|'.
  */
 int is_valid_password(const char *s)
 {
@@ -480,7 +481,7 @@ int is_valid_password(const char *s)
         return 0;
     }
     len = strlen(s);
-    if (len < 6 || len > (size_t)PASSWORD_LEN - 1) {
+    if (len < MIN_PASSWORD_LEN || len > (size_t)PASSWORD_LEN - 1) {
         return 0;
     }
     for (i = 0; i < len; i++) {

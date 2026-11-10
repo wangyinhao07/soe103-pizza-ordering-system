@@ -13,7 +13,9 @@
 /* ---------- String length limits (including the trailing '\0') ---------- */
 #define NAME_LEN        32      /* customer name / menu option name        */
 #define PHONE_LEN       16      /* telephone, digits only, 5..15 chars      */
+#define MIN_PHONE_LEN   5       /* shortest telephone (digits)              */
 #define PASSWORD_LEN    17      /* password, 6..16 chars                    */
+#define MIN_PASSWORD_LEN 6      /* shortest password                        */
 #define DATETIME_LEN    17      /* "YYYY-MM-DD HH:MM"                       */
 #define DATE_LEN        11      /* "YYYY-MM-DD"                             */
 #define LINE_LEN        256     /* one line of keyboard / file input        */
@@ -34,6 +36,7 @@
 #define MIN_PRICE           0L          /* surcharge may be 0         */
 #define MAX_PRICE           100000L     /* 1000.00 yuan per component */
 #define FIRST_ACCOUNT_NO    100001      /* 6-digit account numbers    */
+#define MAX_ACCOUNT_NO      999999      /* largest 6-digit account    */
 #define FIRST_ORDER_ID      1
 #define MAX_LOGIN_ATTEMPTS  3
 
