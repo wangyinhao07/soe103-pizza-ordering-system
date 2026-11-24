@@ -6,10 +6,12 @@ echo Build OK: pizza.exe
 
 gcc -Wall -Wextra -std=c99 -pedantic -I. -o test_utils.exe tests\test_utils.c utils.c
 if errorlevel 1 goto fail
-gcc -Wall -Wextra -std=c99 -pedantic -I. -o test_auth.exe tests\test_auth.c auth.c utils.c customer.c fileio.c
+gcc -Wall -Wextra -std=c99 -pedantic -I. -o test_auth.exe tests\test_auth.c auth.c utils.c customer.c fileio.c order.c menu.c
 if errorlevel 1 goto fail
-echo Tests compiled: test_utils.exe and test_auth.exe
-echo Run them from this folder: test_utils.exe  then  test_auth.exe
+gcc -Wall -Wextra -std=c99 -pedantic -I. -o test_customer.exe tests\test_customer.c customer.c utils.c fileio.c order.c menu.c
+if errorlevel 1 goto fail
+echo Tests compiled: test_utils.exe, test_auth.exe and test_customer.exe
+echo Run them from this folder: test_utils.exe  then  test_auth.exe  then  test_customer.exe
 goto end
 
 :fail

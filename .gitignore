@@ -9,4 +9,5 @@ build/
 .DS_Store
 tests/test_utils
 tests/test_auth
+tests/test_customer
 tests/tmp_stdin.txt

@@ -18,14 +18,26 @@ $(TARGET): $(SRC) common.h utils.h fileio.h auth.h menu.h customer.h order.h sta
 tests/test_utils: tests/test_utils.c utils.c utils.h common.h
 	$(CC) $(CFLAGS) -o tests/test_utils tests/test_utils.c utils.c
 
+# customer.c calls save_customers() (fileio.c) and order_history_ui()
+# (order.c -> menu.c), so those modules are linked here as well.
 tests/test_auth: tests/test_auth.c auth.c utils.c customer.c fileio.c \
-		auth.h utils.h customer.h fileio.h common.h
-	$(CC) $(CFLAGS) -o tests/test_auth tests/test_auth.c auth.c utils.c customer.c fileio.c
+		order.c menu.c \
+		auth.h utils.h customer.h fileio.h order.h menu.h common.h
+	$(CC) $(CFLAGS) -o tests/test_auth tests/test_auth.c auth.c utils.c \
+		customer.c fileio.c order.c menu.c
 
-test: tests/test_utils tests/test_auth
+tests/test_customer: tests/test_customer.c customer.c utils.c fileio.c \
+		order.c menu.c \
+		customer.h utils.h fileio.h order.h menu.h common.h
+	$(CC) $(CFLAGS) -o tests/test_customer tests/test_customer.c customer.c \
+		utils.c fileio.c order.c menu.c
+
+test: tests/test_utils tests/test_auth tests/test_customer
 	./tests/test_utils
 	./tests/test_auth
+	./tests/test_customer
 
 clean:
 	rm -f $(TARGET) $(TARGET).exe tests/test_utils tests/test_auth \
-		tests/test_utils.exe tests/test_auth.exe tests/tmp_stdin.txt
+		tests/test_customer tests/test_utils.exe tests/test_auth.exe \
+		tests/test_customer.exe tests/tmp_stdin.txt
